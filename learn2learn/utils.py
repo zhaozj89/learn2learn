@@ -270,34 +270,37 @@ def update_module(module, updates=None, memo=None):
             p.update = g
 
     # Update the params
-    for param_key in module._parameters:
-        p = module._parameters[param_key]
-        if p is not None and hasattr(p, 'update') and p.update is not None:
-            if p in memo:
-                module._parameters[param_key] = memo[p]
-            else:
-                updated = p + p.update
-                memo[p] = updated
-                module._parameters[param_key] = updated
+    if hasattr(module, '_parameters'):
+        for param_key in module._parameters:
+            p = module._parameters[param_key]
+            if p is not None and hasattr(p, 'update') and p.update is not None:
+                if p in memo:
+                    module._parameters[param_key] = memo[p]
+                else:
+                    updated = p + p.update
+                    memo[p] = updated
+                    module._parameters[param_key] = updated
 
     # Second, handle the buffers if necessary
-    for buffer_key in module._buffers:
-        buff = module._buffers[buffer_key]
-        if buff is not None and hasattr(buff, 'update') and buff.update is not None:
-            if buff in memo:
-                module._buffers[buffer_key] = memo[buff]
-            else:
-                updated = buff + buff.update
-                memo[buff] = updated
-                module._buffers[buffer_key] = updated
+    if hasattr(module, '_buffers'):
+        for buffer_key in module._buffers:
+            buff = module._buffers[buffer_key]
+            if buff is not None and hasattr(buff, 'update') and buff.update is not None:
+                if buff in memo:
+                    module._buffers[buffer_key] = memo[buff]
+                else:
+                    updated = buff + buff.update
+                    memo[buff] = updated
+                    module._buffers[buffer_key] = updated
 
     # Then, recurse for each submodule
-    for module_key in module._modules:
-        module._modules[module_key] = update_module(
-            module._modules[module_key],
-            updates=None,
-            memo=memo,
-        )
+    if hasattr(module, '_modules'):
+        for module_key in module._modules:
+            module._modules[module_key] = update_module(
+                module._modules[module_key],
+                updates=None,
+                memo=memo,
+            )
 
     # Finally, rebuild the flattened parameters for RNNs
     # See this issue for more details:
